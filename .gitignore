@@ -247,9 +247,9 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/java,python,jupyternotebooks,git,linux
 
 # books
-.pdf
-.epub
-.djvu
+*.pdf
+*.epub
+*.djvu
 
 # podman
 layers*/
