@@ -249,6 +249,7 @@ pyrightconfig.json
 # books
 .pdf
 .epub
+.djvu
 
 # podman
 layers*/
