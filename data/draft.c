@@ -4,7 +4,8 @@
 #define MAXLINE 1000
 
 int get_line(char line[], int limit);
-void tab_to_space(char new_line[], char old_line[], int tab_length);
+void detab(char new_line[], char old_line[], int tab_length);
+void entab (char new_line[], char old_line[], int tab_lenght);
 
 
 int main()
@@ -13,7 +14,7 @@ int main()
 	int len, i;
 
 	for (i = 0; (len=get_line(raw_line, MAXLINE)) > 0; ++i)
-		tab_to_space(correct_line, raw_line, TAB);
+		entab(correct_line, raw_line, TAB);
 
 	/* I want the result on new line in case of EOF without '\n'*/
 	if (len == 0)
@@ -31,19 +32,13 @@ int get_line(char line[], int limit)
 
 	for (i = 0; i<limit-1 && (c = getchar())!='\n' && c != EOF; ++i)
 		line[i] = c;
-
-//	if (c == '\n') {
-//		line[i] = c;
-//		++i;
-//	}
-
 	line[i] = '\0';
 
 	return i;
 }
 
 
-void tab_to_space(char new_line[], char old_line[], int tab_length)
+void detab(char new_line[], char old_line[], int tab_length)
 {
 	int c, i, j, k;  /* j counts chars for new_line, k counts spaces */
 
@@ -57,6 +52,35 @@ void tab_to_space(char new_line[], char old_line[], int tab_length)
 			continue;
 		}
 		new_line[j] = c;
+		++j;
+	}
+	new_line[j] = '\0';
+}
+
+
+void entab (char new_line[], char old_line[], int tab_length)
+{
+	int c, prev_c;    /* current and previous chars */
+    int	i, j;    /* i is for old_line and j is for new_line */
+    int	count;    /* count blanks */
+
+	prev_c = -1;  /* -1 is certainly is not in ASCII table */
+	j = 0;
+	count = 1;
+
+	for (i = 0; (c=old_line[i])!=EOF && c!='\0'; ++i) {
+		if (c == ' ' && prev_c == ' ') {
+			++count;
+			if ((count % (tab_length*2)) == 0) {
+				j -= tab_length-1;		/* indexing starts from 0 */
+				c = '\t';
+				count = 1;
+			}
+		}
+		else
+			count = 1;
+		new_line[j] = c;
+		prev_c = c;
 		++j;
 	}
 	new_line[j] = '\0';
