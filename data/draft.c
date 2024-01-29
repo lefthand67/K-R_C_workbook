@@ -2,26 +2,23 @@
 
 #define TAB 4
 #define MAXLINE 1000
+#define NCOLUMN 40
 
 int get_line(char line[], int limit);
 void detab(char new_line[], char old_line[], int tab_length);
-void entab (char new_line[], char old_line[], int tab_lenght);
+void wrap_line(char new_line[], char old_line[], int line_length, int n_column);
 
 
 int main()
 {
-	char raw_line[MAXLINE], correct_line[MAXLINE];
-	int len, i;
+	int len;
+	char line[MAXLINE], detabbed_line[MAXLINE*2], wrapped_line[MAXLINE*2];
 
-	for (i = 0; (len=get_line(raw_line, MAXLINE)) > 0; ++i)
-		entab(correct_line, raw_line, TAB);
-
-	/* I want the result on new line in case of EOF without '\n'*/
-	if (len == 0)
-		printf("\n");
-
-	printf("%s\n", correct_line);
-
+	while ((len=get_line(line, MAXLINE)) > 0) {
+		detab(detabbed_line, line, TAB);
+		wrap_line(wrapped_line, detabbed_line, len, NCOLUMN);
+		printf("%s\n", wrapped_line);
+	}
 	return 0;
 }
 
@@ -58,30 +55,46 @@ void detab(char new_line[], char old_line[], int tab_length)
 }
 
 
-void entab (char new_line[], char old_line[], int tab_length)
+void wrap_line(char new_line[], char old_line[], int line_length, int n_column)
 {
-	int c, prev_c;    /* current and previous chars */
-    int	i, j;    /* i is for old_line and j is for new_line */
-    int	count;    /* count blanks */
+	int c, end_c;  /* current char and end char of the short line */
+	int i, j;  /* counters for old and new lines respectively */
+	int line_end;  /* helps to find the end of the short line */
+	int keeper;  /* keeps the last end_line value */
+	int problem_line;  /* the flag indicates there are no blanks in the short line */
 
-	prev_c = -1;  /* -1 is certainly is not in ASCII table */
-	j = 0;
-	count = 1;
+	keeper = line_end = n_column;
+	problem_line = 0;
+	j = 0;  /* normally j == i, but we will need it in case of problem lines */
 
-	for (i = 0; (c=old_line[i])!=EOF && c!='\0'; ++i) {
-		if (c == ' ' && prev_c == ' ') {
-			++count;
-			if ((count % (tab_length*2)) == 0) {
-				j -= tab_length-1;		/* indexing starts from 0 */
-				c = '\t';
-				count = 1;
-			}
+	/* loop through old line */
+	for (i = 0; (c=old_line[i])!='\0' && c!=EOF; ++i, ++j) {
+		/* find the end of new line, this is the blank or null terminator */
+		if (!problem_line)
+			while ((end_c=old_line[line_end]) != ' ' && end_c!='\0')
+				--line_end;
+		/* in case the short line does not contain blanks */
+		if (line_end == -1) {
+			line_end = keeper;  /* restore the line_end */
+			problem_line = 1;  /* mark the problem */
 		}
-		else
-			count = 1;
+		/* put \n at the end of the current line_end */
+		if (i == line_end) {
+			new_line[j] = '\n';
+			/* emergency plan for a problem line */
+			if (problem_line) {
+				--j;
+				new_line[j] = '-';
+				++j;
+				i -= 2;  /* we had to substitute 2 non blank chars with '-'
+							and \n */
+				problem_line = 0;
+			}
+			keeper = line_end += n_column-1;
+			continue;
+		}
 		new_line[j] = c;
-		prev_c = c;
-		++j;
 	}
+	/* finish the whole expression */
 	new_line[j] = '\0';
 }
