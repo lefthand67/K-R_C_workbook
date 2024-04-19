@@ -22,7 +22,7 @@ int main()
 	for (i = 0; i < MAX_WORDS; ++i)
 		words[i] = 0;
 
-	while ((c = getchar()) != '\n') {
+	while ((c = getchar()) != EOF) {
 
 		/* check for maximum number of words */
 		if (nw > MAX_WORDS) {
@@ -31,7 +31,7 @@ int main()
 		}
 
 		/* check end of a word and skip blanks */
-		if (c == ' ' || c == '\t') {
+		if (c == ' ' || c == '\t' || c == '\n') {
 			if (prev_c == ' ' || prev_c == '\t')
 				continue;
 			state = OUT;
